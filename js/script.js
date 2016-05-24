@@ -1,27 +1,57 @@
 // JavaScript File
-var mapOptions = {
-  zoom: 16,
-  center: {lat: 36.886409, lng: 30.699376},
-};
+
 
 function initMap() {
-  var map = new google.maps.Map(document.getElementById('map'),
-  mapOptions);
-    var marker;
-    marker = new google.maps.Marker({
-    map: map,
-    draggable: true,
-    animation: google.maps.Animation.DROP,
-    position: {lat: 36.886409, lng: 30.699376}  });
-    marker.addListener('click', toggleBounce);
-    function toggleBounce() {
-      if (marker.getAnimation() !== null) {
-        marker.setAnimation(null);
-      } else {
-        marker.setAnimation(google.maps.Animation.BOUNCE);
-      }
-    }
-    
+  var mapOptions = {
+  zoom: 5,
+  center: new google.maps.LatLng(48.923694, 24.709126)
 };
+  
+  var map = new google.maps.Map(document.getElementById('map'),  mapOptions);
+    loadXMLFile();
+    
+function loadXMLFile(){
+  var filename = "js/places.xml";
+  $.ajax({
+    type: "GET",
+    url:filename,
+    dataType: "xml",
+    success: parseXML,
+    error: onXMLLoadFailed
+  });
+  function onXMLLoadFailed(){
+    alert("An Error has occured.");
+  }
+  function parseXML(xml){
+    
+    var bounds = new google.maps.LatLngBounds();
+    $(xml).find("marker").each(function(){
+            var lat = $(this).find('latitude').text();
+            var lng = $(this).find('longitude').text();
+            var name = $(this).find('name').text();
+            var markerCoords = new google.maps.LatLng(parseFloat(lat), parseFloat(lng));
+            bounds.extend(markerCoords);
+            var marker = new google.maps.Marker({position: markerCoords, map:map, });
+            var infowindow = new google.maps.InfoWindow({
+                content:name
+             });
+            marker.addListener('click', function() {
+              infowindow.open(map, marker);
+            });
+            
+            
+            
+        });
+  map.fitBounds(bounds);
+  }
+
+  
+  
+};
+ 
+   
+};
+
+
 
   
